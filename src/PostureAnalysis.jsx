@@ -2544,4 +2544,4 @@ function PatientProfileModal({ patient, onClose, onLoadAssessment, onSaveField }
 
 // ─── PATIENT CARD ──────────────────────────────────────────────────────────────
 
-export { PostureAnalysisModule, PostureLiveAnalysis, PhotoUploadAnalyzer };
+export { PostureAnalysisModule, PostureLiveAnalysis, PhotoUploadAnalyzer, DB_KEY, DEMO_PATIENTS, getInitials, AVATAR_GRADIENTS, avatarGrad, PatientProfileModal, loadPatientDB, savePatientDB, genId };

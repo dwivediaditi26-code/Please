@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
 import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
 import { makePDFPage } from './SubjectiveKinetic.jsx';
+import { DB_KEY, DEMO_PATIENTS, getInitials, AVATAR_GRADIENTS, avatarGrad, PatientProfileModal, loadPatientDB, savePatientDB, genId } from './PostureAnalysis.jsx';
 const DB_KEY = "physio_patient_db_v1";
 
 const DEMO_PATIENTS = [
@@ -1343,4 +1344,4 @@ function PostureDefectModule() {
 // HOME MODULE — App Introduction & Feature Overview
 // ═══════════════════════════════════════════════════════════════════════════
 
-export { DB_KEY, DEMO_PATIENTS, getInitials, AVATAR_GRADIENTS, avatarGrad, PatientCard, PatientDatabasePanel, PatientProfileModal, loadPatientDB, savePatientDB, genId, POSTURE_DEFECTS, PostureDefectDetail, PostureDefectModule };
+export { PatientCard, PatientDatabasePanel, POSTURE_DEFECTS, PostureDefectDetail, PostureDefectModule };

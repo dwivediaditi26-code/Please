@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
 import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
-import { OUTCOME_DB, OM_CAT_COLOR, DASH_OPTS, LEFS_OPTS, TSK_OPTS, FABQ_OPTS, OMSlider, ScoreRing, isImproved, ScoreGauge, Sparkline } from './OutcomesSOAP.jsx';
+import { OUTCOME_DB, OM_CAT_COLOR, DASH_OPTS, LEFS_OPTS, TSK_OPTS, FABQ_OPTS, OMSlider, ScoreRing, isImproved, ScoreGauge, Sparkline, EXERCISE_DB, PROGRAMME_TEMPLATES, ALL_EXERCISES, KNEE_PROTOCOLS, SHOULDER_PROTOCOLS, ELBOW_PROTOCOLS, HIP_PROTOCOLS } from './OutcomesSOAP.jsx';
 function ProtocolPanel({ protocols, openId, setOpenId, openTx, setOpenTx, openPhase, togglePhase }) {
   return (
     <div style={{ borderTop:"1px solid rgba(0,0,0,0.08)", padding:"10px 14px 14px" }}>
@@ -2446,4 +2446,4 @@ function genROMSoap(data){
 }
 
 
-export { EXERCISE_DB, PROGRAMME_TEMPLATES, ALL_EXERCISES, KNEE_PROTOCOLS, SHOULDER_PROTOCOLS, ELBOW_PROTOCOLS, HIP_PROTOCOLS, ALL_TESTS, ROM_DATA, ExercisePrescriptionModule, PalpationModule, TreatmentTechniquesModule, TreatmentSessionLogModule };
+export { ALL_TESTS, ROM_DATA, ExercisePrescriptionModule, PalpationModule, TreatmentTechniquesModule, TreatmentSessionLogModule };

@@ -10,7 +10,8 @@ import { ExercisePrescriptionModule, PalpationModule, TreatmentTechniquesModule,
 import { ROMModule, MMTModule, NeurologicalModule, DERMATOMES, REFLEXES, NEURAL_TENSION, RED_FLAGS_NEURO } from './ROMMMTNeuro.jsx';
 import { PostureCameraModule, mid, clamp } from './PostureCamera.jsx';
 import { PostureAnalysisModule } from './PostureAnalysis.jsx';
-import { PatientDatabasePanel, PostureDefectModule, loadPatientDB, savePatientDB, genId } from './PatientDatabase.jsx';
+import { PatientDatabasePanel, PostureDefectModule } from './PatientDatabase.jsx';
+import { loadPatientDB, savePatientDB, genId, PostureLiveAnalysis, PhotoUploadAnalyzer } from './PostureAnalysis.jsx';
 import { HomeModule, TherapistDashboardModule, PdfReportsModal } from './HomeDashboard.jsx';
 
 function AppInner() {

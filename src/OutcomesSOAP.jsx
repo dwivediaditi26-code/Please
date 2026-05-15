@@ -4644,4 +4644,4 @@ const HIP_PROTOCOLS = [
 
 // ─── SHARED PROTOCOL PANEL RENDERER ──────────────────────────────────────────
 
-export { generateDiagnosis, ErgoModule, GaitModule, OUTCOME_DB, OM_CAT_COLOR, DASH_OPTS, LEFS_OPTS, TSK_OPTS, FABQ_OPTS, OMSlider, ScoreRing, isImproved, ScoreGauge, Sparkline, OutcomeMeasuresModule, SOAPNoteModule };
+export { generateDiagnosis, ErgoModule, GaitModule, OUTCOME_DB, OM_CAT_COLOR, DASH_OPTS, LEFS_OPTS, TSK_OPTS, FABQ_OPTS, OMSlider, ScoreRing, isImproved, ScoreGauge, Sparkline, OutcomeMeasuresModule, SOAPNoteModule, EXERCISE_DB, PROGRAMME_TEMPLATES, ALL_EXERCISES, KNEE_PROTOCOLS, SHOULDER_PROTOCOLS, ELBOW_PROTOCOLS, HIP_PROTOCOLS };
