@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
 import { C, getC } from './theme.jsx';
+import { FMS_DB, FMS_STORAGE_KEY2, NKT_REGIONS, mid } from './shared.jsx';
 
 function FMASection(){
   const [selectedTests,setSelectedTests]=useState(()=>{

@@ -14,6 +14,7 @@ import { PostureAnalysisModule } from './PostureAnalysis.jsx';
 import { PostureDefectModule, PostureDefectDetail } from './PatientDatabase.jsx';
 import { PatientDatabasePanel, PatientProfileModal, loadPatientDB, savePatientDB, genId } from './PatientDatabase.jsx';
 import { HomeModule, TherapistDashboardModule, PdfReportsModal } from './HomeDashboard.jsx';
+import { ALL_TESTS, C, DERMATOMES, KC_REGIONS, MOVEMENTS, NEURAL_TENSION, NKT_REGIONS, PC, RED_FLAGS_NEURO, REFLEXES, SUBJECTIVE_SECTIONS, clamp, mid } from './shared.jsx';
 
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { error: null }; }
