@@ -1,9 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC } from './theme.jsx';
-import { KEY_JOINTS, PC, TRACKING_STATES, clamp, mid, px, r1, vis } from './shared.jsx';
+import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
+import { KEY_JOINTS, TRACKING_STATES, computeQuality, createSmoother, CalibrationSystem, SkeletonRenderer, BodyAlignmentGuide, TrackingStateBar, CameraView, CameraControls, CameraPositionGuide, PoseTracker } from './ROMMMTNeuro.jsx';
 import { makePDFPage } from './SubjectiveKinetic.jsx';
-import { computeQuality, createSmoother } from './ROMMMTNeuro.jsx';
-
 function PostureCameraModule({ activePatient, set }) {
   const videoRef   = useRef(null);
   const canvasRef  = useRef(null);
@@ -1283,8 +1281,17 @@ function PostureCameraModule({ activePatient, set }) {
 // ════════════════════════════════════════════════════════════════════════════
 
 // ─── Colours ─────────────────────────────────────────────────────────────────
+const PC = {
+  bg:"#faf8fc", surface:"#ffffff", s2:"#f5f0fb", s3:"#ede7f6",
+  border:"#d8cce8", accent:"#7c3aed", a2:"#9333ea", a3:"#059669",
+  text:"#1a1025", muted:"#7e6a9a", red:"#dc2626", yellow:"#b45309",
+  green:"#059669", purple:"#9333ea", orange:"#f97316",
+};
 
 // ─── Math Utilities ───────────────────────────────────────────────────────────
+const mid = (a, b) => a && b ? { x:(a.x+b.x)/2, y:(a.y+b.y)/2, visibility: Math.min(a.visibility||0,b.visibility||0) } : null;
+const vis = (lm, i, thresh=0.4) => (lm[i]?.visibility||0) > thresh;
+const px  = (lm, i, W, H) => lm[i] ? [lm[i].x*W, lm[i].y*H] : null;
 
 function calcAngleDeg(a, b) {
   if (!a || !b) return null;
@@ -1305,6 +1312,8 @@ function dist2D(a, b) {
   if (!a || !b) return null;
   return Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2);
 }
+const r1 = v => v !== null && v !== undefined && !isNaN(v) ? Math.round(v*10)/10 : null;
+const clamp = (v, mn, mx) => Math.max(mn, Math.min(mx, v));
 
 // ─── MEDIAPIPE LANDMARK INDICES ───────────────────────────────────────────────
 // 0=nose, 2=L_eye, 5=R_eye, 7=L_ear, 8=R_ear
@@ -3121,6 +3130,12 @@ function FindingCard({ f, defaultOpen=false }) {
 }
 
 // ─── VIEW CONFIG ──────────────────────────────────────────────────────────────
+const POSTURE_VIEW_META = {
+  anterior:  { label:"Anterior",      short:"Front",  colour:PC.accent,  icon:"⬆", analysisKey:"anterior", helper:"Patient faces camera, feet hip-width, arms relaxed. Camera at pelvis height.", checks:["Full body in frame","Camera at pelvis height","Feet hip-width apart","Minimal clothing","Patient relaxed"] },
+  posterior: { label:"Posterior",     short:"Back",   colour:PC.a2,      icon:"⬇", analysisKey:"posterior",helper:"Patient faces away. Scapulae, gluteal crease and heels visible.", checks:["Hair off shoulders","Scapulae clearly visible","Equal weight both feet","Arms relaxed","Heel tendon visible"] },
+  left:      { label:"Left Lateral",  short:"L.Side", colour:PC.yellow,  icon:"◀", analysisKey:"lateral",  helper:"Patient stands side-on, left side toward camera. EAM, acromion, GT, and lateral malleolus in frame.", checks:["Ear, shoulder, hip, ankle aligned","Neutral gaze","Knees not locked","Do not lean toward camera","Arms visible"] },
+  right:     { label:"Right Lateral", short:"R.Side", colour:PC.green,   icon:"▶", analysisKey:"lateral",  helper:"Patient stands side-on, right side toward camera.", checks:["Ear, shoulder, hip, ankle aligned","Neutral gaze","Knees not locked","Do not lean away","Arms visible"] },
+};
 
 // ─── MEDIAPIPE LOADER ─────────────────────────────────────────────────────────
 function loadScript(src) {
@@ -3131,7 +3146,8 @@ function loadScript(src) {
     document.head.appendChild(s);
   });
 }
+const POSTURE_MP_CDN = "https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404";
 
 // ─── MAIN POSTURE ANALYSIS MODULE ────────────────────────────────────────────
 
-export { PostureCameraModule, usePostureHistory, AdvancedMeasurementEngine, ReliabilityEngine, ClinicalFindingsEngine, PostureScoreEngine, renderPostureOverlay, loadScript };
+export { PostureCameraModule, usePostureHistory, AdvancedMeasurementEngine, ReliabilityEngine, ClinicalFindingsEngine, PostureScoreEngine, renderPostureOverlay, loadScript, POSTURE_VIEW_META, POSTURE_MP_CDN, PostureSparkline, PostureScoreRing, MetricRow, FindingCard, mid, vis, clamp, px, r1 };

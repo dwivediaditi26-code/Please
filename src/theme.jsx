@@ -1,4 +1,21 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from "react";
+
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(e) { return { error: e }; }
+  render() {
+    if (this.state.error) return (
+      <div style={{padding:32,fontFamily:"monospace",background:"#fff",color:"#c00",whiteSpace:"pre-wrap"}}>
+        <h2>Runtime Error</h2>
+        <p>{this.state.error?.message}</p>
+        <pre>{this.state.error?.stack}</pre>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
 
 // ─── Global Mobile-Responsive Styles ─────────────────────────────────────────
 const MOBILE_CSS = `
@@ -341,4 +358,10 @@ function useTheme() {
 // These will update when theme changes via useTheme() in App
 const C = getC();
 
-export { MOBILE_CSS, MobileStyleInjector, THEMES, getC, setTheme, useTheme, C };
+// ═══════════════════════════════════════════════════════════════════════════
+// SPECIAL TESTS — 100+ Tests with How-To + SVG Illustrations
+// ═══════════════════════════════════════════════════════════════════════════
+
+// SVG illustrations for each test (simplified anatomical diagrams)
+
+export { ErrorBoundary, MOBILE_CSS, MobileStyleInjector, THEMES, getC, setTheme, useTheme, C };

@@ -1,11 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC } from './theme.jsx';
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SPECIAL TESTS — 100+ Tests with How-To + SVG Illustrations
-// ═══════════════════════════════════════════════════════════════════════════
-
-// SVG illustrations for each test (simplified anatomical diagrams)
+import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
 const TEST_SVG = {
   // ─── SHOULDER ───────────────────────────────────────────────────────────
   neer: (

@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC } from './theme.jsx';
+import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
 import { TEST_SVG, SPECIAL_TESTS_DATA } from './constants.jsx';
-
 function SpecialTestsSection({ data, set }) {
   const [region, setRegion] = useState("shoulder");
   const [openTest, setOpenTest] = useState(null);
@@ -677,4 +676,4 @@ function cyriaxAutoReason(regionId, data) {
 
 // ─── CYRIAX MODULE COMPONENT ─────────────────────────────────────────────────
 
-export { SpecialTestsSection };
+export { SpecialTestsSection, CYRIAX_STTT_INTERPRETATION, ENDFEEL_DATA, CAPSULAR_PATTERNS, CYRIAX_REGIONS_DATA, cyriaxAutoReason };

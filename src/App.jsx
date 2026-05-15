@@ -1,33 +1,17 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { useTheme, getC, MobileStyleInjector } from './theme.jsx';
-import { generateDiagnosis, ErgoModule, GaitModule } from './DiagnosisErgoGait.jsx';
-import { SubjectiveModule, KineticChainSection } from './SubjectiveKinetic.jsx';
+import { ErrorBoundary, useTheme, C, MobileStyleInjector } from './theme.jsx';
 import { SpecialTestsSection } from './SpecialTestsSection.jsx';
-import { CyriaxModule, BodyChartModule } from './CyriaxBodyChart.jsx';
+import { CyriaxModule, SUBJECTIVE_SECTIONS, BodyChartModule } from './CyriaxBodyChart.jsx';
+import { SubjectiveModule, NKT_REGIONS, KC_REGIONS, KineticChainSection, MOVEMENTS } from './SubjectiveKinetic.jsx';
 import { FMASection, FasciaSection, NKTSection, CyriaxRegionTests } from './FMAFasciaNKT.jsx';
+import { generateDiagnosis, ErgoModule, GaitModule } from './OutcomesSOAP.jsx';
 import { OutcomeMeasuresModule, SOAPNoteModule } from './OutcomesSOAP.jsx';
-import { ExercisePrescriptionModule, PalpationModule, TreatmentTechniquesModule, TreatmentSessionLogModule } from './TreatmentModules.jsx';
-import { ROMModule, MMTModule, NeurologicalModule } from './ROMMMTNeuro.jsx';
-import { PostureCameraModule } from './PostureCamera.jsx';
+import { ExercisePrescriptionModule, PalpationModule, TreatmentTechniquesModule, TreatmentSessionLogModule, ALL_TESTS } from './TreatmentModules.jsx';
+import { ROMModule, MMTModule, NeurologicalModule, DERMATOMES, REFLEXES, NEURAL_TENSION, RED_FLAGS_NEURO } from './ROMMMTNeuro.jsx';
+import { PostureCameraModule, mid, clamp } from './PostureCamera.jsx';
 import { PostureAnalysisModule } from './PostureAnalysis.jsx';
-import { PostureDefectModule, PostureDefectDetail, PatientDatabasePanel, PatientProfileModal, loadPatientDB, savePatientDB, genId } from './PatientDatabase.jsx';
+import { PatientDatabasePanel, PostureDefectModule, loadPatientDB, savePatientDB, genId } from './PatientDatabase.jsx';
 import { HomeModule, TherapistDashboardModule, PdfReportsModal } from './HomeDashboard.jsx';
-import { ALL_TESTS, C, DERMATOMES, KC_REGIONS, MOVEMENTS, NEURAL_TENSION, NKT_REGIONS, PC, RED_FLAGS_NEURO, REFLEXES, SUBJECTIVE_SECTIONS, clamp, mid } from './shared.jsx';
-
-class ErrorBoundary extends Component {
-  constructor(props) { super(props); this.state = { error: null }; }
-  static getDerivedStateFromError(e) { return { error: e }; }
-  render() {
-    if (this.state.error) return (
-      <div style={{padding:32,fontFamily:"monospace",background:"#fff",color:"#c00",whiteSpace:"pre-wrap"}}>
-        <h2>Runtime Error</h2>
-        <p>{this.state.error?.message}</p>
-        <pre>{this.state.error?.stack}</pre>
-      </div>
-    );
-    return this.props.children;
-  }
-}
 
 function AppInner() {
   const { theme, toggle: toggleTheme, C: TC } = useTheme();

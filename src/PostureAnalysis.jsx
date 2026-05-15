@@ -1,8 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC } from './theme.jsx';
-import { PC, POSTURE_MP_CDN, POSTURE_VIEW_META, clamp, mid, px, r1, vis } from './shared.jsx';
-import { usePostureHistory, AdvancedMeasurementEngine, ReliabilityEngine, ClinicalFindingsEngine, PostureScoreEngine, renderPostureOverlay, loadScript } from './PostureCamera.jsx';
-
+import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
+import { usePostureHistory, AdvancedMeasurementEngine, ReliabilityEngine, ClinicalFindingsEngine, PostureScoreEngine, renderPostureOverlay, loadScript, POSTURE_VIEW_META, POSTURE_MP_CDN, PostureSparkline, PostureScoreRing, MetricRow, FindingCard, vis, clamp } from './PostureCamera.jsx';
 function PostureAnalysisModule({ activePatient, set } = {}) {
   // ── State ────────────────────────────────────────────────────────────────
   const [mode, setMode]                 = useState("upload");         // upload | live
@@ -1905,6 +1903,130 @@ function PhotoUploadAnalyzer() {
 // ═══════════════════════════════════════════════════════════════════════════
 // MULTI-PATIENT DATABASE
 // ═══════════════════════════════════════════════════════════════════════════
+const DB_KEY = "physio_patient_db_v1";
+
+const DEMO_PATIENTS = [
+  {
+    id:"demo_001", name:"Aisha Malik", lastDx:"", hasRedFlags:false,
+    createdAt:"2025-01-10T09:00:00Z", updatedAt:"2025-01-10T09:00:00Z",
+    data:{
+      dem_name:"Aisha Malik", dem_age:"34", dem_sex:"Female", dem_occupation:"Office administrator",
+      dem_work_status:"Full time employed",
+      cc_main:"My neck has been killing me for weeks. I wake up with terrible stiffness and by afternoon I can barely turn my head.",
+      cc_location:["Neck — posterior","Neck — lateral (R)","Shoulder (R)"],
+      cc_symptom_type:["Stiffness","Aching","Sharp"],
+      cc_onset:["Gradual — insidious"], cc_duration:["1–3 months"],
+      pa_vas_now:"5", pa_vas_worst:"8", pa_vas_best:"2",
+      pa_quality:["Aching","Stiffness","Sharp"],
+      sb_morning:["Worse on waking — prolonged stiffness (>30 min)"],
+      sb_night:["Pain disturbs sleep — takes time to settle"],
+      agg_posture:["Prolonged sitting > 1 hour","Computer work","Looking down (phone use)"],
+      agg_movement:["Rotation right","Looking over shoulder"],
+      rel_manual:["Heat application"],
+      moi_type:["Postural overload"], moi_activity:"Sitting at desk all day working from home",
+      phx_conditions:"Migraine (occasional)",
+      dem_gp:"Dr. Patel",
+    }
+  },
+  {
+    id:"demo_002", name:"James Okonkwo", lastDx:"", hasRedFlags:false,
+    createdAt:"2025-01-11T10:00:00Z", updatedAt:"2025-01-11T10:00:00Z",
+    data:{
+      dem_name:"James Okonkwo", dem_age:"52", dem_sex:"Male", dem_occupation:"Warehouse operative",
+      dem_work_status:["Full time employed","Off work — injury"],
+      cc_main:"Sharp pain down my left leg when I bend forward. Started after lifting a heavy pallet last month.",
+      cc_location:["Lower back","Buttock (L)","Thigh posterior (L)"],
+      cc_radiation:["Radiates to leg (L)","Radiates to calf"],
+      cc_symptom_type:["Sharp","Shooting","Tingling/pins & needles"],
+      cc_onset:["Lifting injury — flexed spine"], cc_duration:["2–4 weeks (subacute)"],
+      pa_vas_now:"6", pa_vas_worst:"9", pa_vas_best:"3",
+      pa_quality:["Sharp","Shooting","Burning","Tingling"],
+      sb_morning:["Worst on waking — eases quickly (<30 min)"],
+      sb_night:["Pain wakes from sleep — can return to sleep"],
+      agg_movement:["Forward bending","Getting in/out of car","Coughing / sneezing"],
+      rel_posture:["Lying with knees bent"],
+      moi_type:["Lifting injury — flexed spine"], moi_activity:"Lifting a 40kg pallet at warehouse",
+      phx_conditions:"Hypertension", meds_current:"Amlodipine 5mg",
+      s_red4:"", // no bilateral pins
+    }
+  },
+  {
+    id:"demo_003", name:"Priya Sharma", lastDx:"", hasRedFlags:false,
+    createdAt:"2025-01-12T11:00:00Z", updatedAt:"2025-01-12T11:00:00Z",
+    data:{
+      dem_name:"Priya Sharma", dem_age:"28", dem_sex:"Female", dem_occupation:"Physiotherapy student",
+      dem_work_status:"Student",
+      cc_main:"My left knee swells up after running and feels unstable going down stairs.",
+      cc_location:["Knee (L)"],
+      cc_symptom_type:["Pain","Swelling","Giving way","Clicking"],
+      cc_onset:["Non-contact sport injury","Gradual — insidious"], cc_duration:["3–6 months (chronic)"],
+      pa_vas_now:"4", pa_vas_worst:"7", pa_vas_best:"0",
+      pa_quality:["Aching","Sharp","Throbbing"],
+      pa_pattern:["Only with specific movements","Post-activity delayed"],
+      sb_morning:["Stiff on waking — improves with movement"],
+      agg_activity:["Running","Stairs — down","Squatting","Gym — cardio"],
+      rel_posture:["Lying flat"],
+      rel_manual:["Ice application"],
+      moi_type:["Running injury"], moi_activity:"Training for half marathon",
+      ar_sport_level:["Active — 4–5x/week"],
+      ar_sports_played:["Running — road"],
+      ar_goal_sport:"Return to running half marathon training",
+      phx_conditions:"None",
+    }
+  },
+  {
+    id:"demo_004", name:"Robert Chen", lastDx:"", hasRedFlags:false,
+    createdAt:"2025-01-13T12:00:00Z", updatedAt:"2025-01-13T12:00:00Z",
+    data:{
+      dem_name:"Robert Chen", dem_age:"67", dem_sex:"Male", dem_occupation:"Retired teacher",
+      dem_work_status:"Retired",
+      cc_main:"Both shoulders ache constantly. I can't lift my arms above my head anymore and getting dressed in the morning is a real struggle.",
+      cc_location:["Shoulder (L)","Shoulder (R)","Upper arm (L)","Upper arm (R)"],
+      cc_symptom_type:["Aching","Stiffness","Weakness"],
+      cc_onset:["Gradual — insidious"], cc_duration:["1–2 years"],
+      pa_vas_now:"5", pa_vas_worst:"7", pa_vas_best:"2",
+      pa_quality:["Aching","Deep","Constant ache"],
+      pa_pattern:["Constant — varies in intensity","Morning dominant"],
+      sb_morning:["Worse on waking — prolonged stiffness (>30 min)"],
+      sb_night:["Cannot sleep on affected side","Pain disturbs sleep — takes time to settle"],
+      agg_movement:["Reaching overhead","Reaching across body"],
+      agg_activity:["Housework","Gardening"],
+      rel_manual:["Heat application","Physiotherapy manual therapy"],
+      phx_conditions:"Type 2 diabetes, Hypertension",
+      meds_current:"Metformin 500mg, Lisinopril 10mg",
+      fl_self_care:["Dressing — upper body difficulty","Washing hair — difficulty"],
+      fl_domestic:["Cleaning — cannot vacuum","Ironing — cannot perform"],
+    }
+  },
+  {
+    id:"demo_005", name:"Sarah Thompson", lastDx:"", hasRedFlags:false,
+    createdAt:"2025-01-14T13:00:00Z", updatedAt:"2025-01-14T13:00:00Z",
+    data:{
+      dem_name:"Sarah Thompson", dem_age:"41", dem_sex:"Female", dem_occupation:"Nurse",
+      dem_work_status:"Full time employed",
+      cc_main:"I get burning pain in my right wrist and hand, especially at night. My fingers feel numb when I wake up.",
+      cc_location:["Wrist (R)","Hand/fingers (R)"],
+      cc_radiation:["Radiates to hand/fingers (R)"],
+      cc_symptom_type:["Burning","Tingling/pins & needles","Numbness","Weakness"],
+      cc_onset:["Repetitive strain","Occupational injury"], cc_duration:["6–12 months"],
+      pa_vas_now:"4", pa_vas_worst:"7", pa_vas_best:"1",
+      pa_quality:["Burning","Tingling","Pins and needles","Numb"],
+      pa_nature:["Neuropathic — burning, shooting, dermatomal"],
+      pa_pattern:["Night pain waking patient","Activity dependent"],
+      sb_night:["Wakes once per night","Arm/leg symptoms at night (neural)"],
+      sb_morning:["Pain free on waking then worsens"],
+      agg_activity:["Computer/keyboard work","Carrying children"],
+      agg_movement:["Reaching across body"],
+      rel_posture:["Lying with arms at sides"],
+      rel_manual:["Massage — general"],
+      moi_type:["Repetitive strain","Occupational injury"],
+      moi_activity:"Long shifts doing patient transfers and documentation",
+      phx_conditions:"Hypothyroidism", meds_current:"Levothyroxine 75mcg",
+      fl_work:["Cannot sit > 1 hour","Computer work painful"],
+      fl_self_care:["Dressing — upper body difficulty"],
+    }
+  },
+];
 
 function loadPatientDB() {
   try {
@@ -2421,75 +2543,5 @@ function PatientProfileModal({ patient, onClose, onLoadAssessment, onSaveField }
 }
 
 // ─── PATIENT CARD ──────────────────────────────────────────────────────────────
-function PatientCard({ patient, isActive, onSelect, onDelete, onProfile }) {
-  const age    = patient.data?.dem_age    ? `${patient.data.dem_age}y` : "";
-  const sex    = patient.data?.dem_sex    || patient.data?.dem_gender || "";
-  const occ    = patient.data?.dem_occupation || "";
-  const dx     = patient.lastDx || "";
-  const filled = Object.keys(patient.data||{}).filter(k=>patient.data[k]&&patient.data[k]!=="").length;
-  const hasRed = patient.hasRedFlags;
-  const vas    = patient.data?.pa_vas_now;
-  const vasColor = vas ? (parseInt(vas)>=7?"#ff4d6d":parseInt(vas)>=4?"#ffb300":"#00c97a") : null;
 
-  return (
-    <div style={{
-      padding:"11px 13px", borderRadius:12, cursor:"pointer", marginBottom:7,
-      background: isActive ? "rgba(0,229,255,0.06)" : "rgba(255,255,255,0.02)",
-      border: `1px solid ${isActive ? "rgba(0,229,255,0.3)" : "rgba(255,255,255,0.05)"}`,
-      transition:"all 0.15s", position:"relative",
-      borderLeft:`3px solid ${hasRed?"#ff4d6d":isActive?"#00e5ff":"transparent"}`,
-    }}>
-      <div style={{display:"flex",alignItems:"center",gap:10}}>
-        {/* Avatar */}
-        <div style={{width:38,height:38,borderRadius:11,background:avatarGrad(patient.id),
-          display:"flex",alignItems:"center",justifyContent:"center",
-          fontSize:"0.8rem",fontWeight:900,color:"#000",flexShrink:0}}>
-          {getInitials(patient.name)}
-        </div>
-
-        <div style={{flex:1,minWidth:0}} onClick={onSelect}>
-          <div style={{fontWeight:700,fontSize:"0.82rem",color:"#1a1025",
-            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-            {patient.name || "Unnamed Patient"}
-            {hasRed && <span style={{marginLeft:5,fontSize:"0.6rem",color:"#ff4d6d"}}>🚩</span>}
-          </div>
-          <div style={{fontSize:"0.63rem",color:"#4a6070",marginTop:1,
-            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-            {[age,sex,occ].filter(Boolean).join(" · ") || "No demographics"}
-          </div>
-          {dx && <div style={{fontSize:"0.6rem",color:"rgba(0,201,122,0.7)",marginTop:2,
-            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>🩺 {dx}</div>}
-        </div>
-
-        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3,flexShrink:0}}>
-          {vas && (
-            <div style={{padding:"1px 6px",borderRadius:6,background:`${vasColor}18`,
-              border:`1px solid ${vasColor}40`,fontSize:"0.6rem",fontWeight:700,color:vasColor}}>
-              VAS {vas}
-            </div>
-          )}
-          <div style={{fontSize:"0.55rem",color:"#2a3f55"}}>
-            {new Date(patient.updatedAt).toLocaleDateString("en-GB")}
-          </div>
-          <div style={{display:"flex",gap:4,marginTop:2}}>
-            <button onClick={e=>{e.stopPropagation();onProfile();}}
-              style={{background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.2)",
-                color:"#00e5ff",borderRadius:5,cursor:"pointer",fontSize:"0.55rem",
-                padding:"2px 6px",fontWeight:700}}>
-              Profile
-            </button>
-            <button onClick={e=>{e.stopPropagation();onDelete();}}
-              style={{background:"none",border:"none",
-                color:"rgba(255,77,109,0.35)",cursor:"pointer",fontSize:"0.65rem",padding:"2px 4px"}}>
-              ✕
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── PATIENT DATABASE PANEL ────────────────────────────────────────────────────
-
-export { PostureAnalysisModule };
+export { PostureAnalysisModule, PostureLiveAnalysis, PhotoUploadAnalyzer };

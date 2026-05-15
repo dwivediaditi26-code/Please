@@ -1,8 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC } from './theme.jsx';
-import { POSTURE_DEFECTS } from './shared.jsx';
+import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
 import { makePDFPage } from './SubjectiveKinetic.jsx';
-
 const DB_KEY = "physio_patient_db_v1";
 
 const DEMO_PATIENTS = [
@@ -127,8 +125,6 @@ const DEMO_PATIENTS = [
     }
   },
 ];
-
-
 
 function loadPatientDB() {
   try {
@@ -914,6 +910,134 @@ function PatientDatabasePanel({ patients, activeId, onSelect, onNew, onDelete, o
 
 
 // ─── POSTURE DEFECTS DATA ─────────────────────────────────────────────────────
+const POSTURE_DEFECTS = {
+  forward_head: {
+    id:"forward_head", icon:"🫀", label:"Forward Head Posture", region:"Cervical",
+    view:["anterior","lateral"],
+    description:"Ear positioned anterior to the acromion process. Each 2.5cm of forward translation adds ~10kg of effective cervical load.",
+    tight_muscles:["Upper trapezius","SCM","Suboccipitals","Scalenes","Pec minor"],
+    weak_muscles:["Deep neck flexors (DNF)","Lower trapezius","Serratus anterior","Rhomboids"],
+    kinetic_chain:"Forward head → cervical lordosis → thoracic kyphosis → shoulder protraction → reduced lung capacity",
+    exercises:["Chin tucks x15 3×","Wall angels x12 3×","DNF activation","Pec minor stretch"]
+  },
+  rounded_shoulders: {
+    id:"rounded_shoulders", icon:"🔄", label:"Rounded/Protracted Shoulders", region:"Thoracic/Shoulder",
+    view:["anterior","lateral","posterior"],
+    description:"Anterior displacement of the humeral head with scapular protraction and internal rotation.",
+    tight_muscles:["Pec major","Pec minor","Anterior deltoid","Subscapularis","Upper trapezius"],
+    weak_muscles:["Lower trapezius","Serratus anterior","Rhomboids","Posterior rotator cuff"],
+    kinetic_chain:"Protracted scapula → reduced subacromial space → impingement risk → compensatory cervical extension",
+    exercises:["Band pull-apart x20","Face pulls x15","Pec doorway stretch","Scapular retraction holds"]
+  },
+  thoracic_kyphosis: {
+    id:"thoracic_kyphosis", icon:"🪃", label:"Increased Thoracic Kyphosis", region:"Thoracic",
+    view:["lateral","posterior"],
+    description:"Excessive posterior convexity of the thoracic spine (>40° Cobb angle). May reduce respiratory capacity.",
+    tight_muscles:["Pec major/minor","Anterior intercostals","Hip flexors"],
+    weak_muscles:["Thoracic extensors","Lower trapezius","Gluteus maximus"],
+    kinetic_chain:"Thoracic kyphosis → forward head → UCS → reduced hip extension → LCS compensations",
+    exercises:["Thoracic extension over foam roller","T-spine rotation","Prone Y-T-W","Back extension"]
+  },
+  lumbar_hyperlordosis: {
+    id:"lumbar_hyperlordosis", icon:"🌊", label:"Lumbar Hyperlordosis", region:"Lumbar",
+    view:["lateral"],
+    description:"Excessive anterior lumbar curve with anterior pelvic tilt. Increases facet joint loading.",
+    tight_muscles:["Hip flexors (iliopsoas, rectus femoris)","TFL","Lumbar erectors","QL"],
+    weak_muscles:["Gluteus maximus","Hamstrings","Transversus abdominis","Rectus abdominis"],
+    kinetic_chain:"Anterior pelvic tilt → hip flexor tightness → glute inhibition → hamstring overload → posterior knee pain",
+    exercises:["Hip flexor couch stretch","Glute bridges 3×15","Dead bug","TA activation"]
+  },
+  anterior_pelvic_tilt: {
+    id:"anterior_pelvic_tilt", icon:"⬇", label:"Anterior Pelvic Tilt", region:"Lumbar/Pelvis",
+    view:["lateral"],
+    description:"ASIS positioned anterior and inferior to PSIS. Often co-exists with lumbar hyperlordosis.",
+    tight_muscles:["Iliopsoas","Rectus femoris","TFL","Lumbar erectors"],
+    weak_muscles:["Gluteus maximus","Hamstrings","TA","Internal obliques"],
+    kinetic_chain:"APT → hip flexor tightness → glute inhibition → lumbar overload → disc stress at L4-S1",
+    exercises:["Pelvic tilts","Couch stretch","Glute activation","Posterior pelvic tilt cues"]
+  },
+  posterior_pelvic_tilt: {
+    id:"posterior_pelvic_tilt", icon:"⬆", label:"Posterior Pelvic Tilt", region:"Lumbar/Pelvis",
+    view:["lateral"],
+    description:"PSIS positioned inferior to ASIS. Flattens lumbar lordosis, often associated with prolonged sitting.",
+    tight_muscles:["Hamstrings","Gluteus maximus","Rectus abdominis"],
+    weak_muscles:["Hip flexors","Lumbar extensors","TFL"],
+    kinetic_chain:"PPT → lumbar flexion bias → disc posterior loading → hamstring overuse",
+    exercises:["Hip flexor stretching","Lumbar extension exercises","Prone hip extension","Cat-cow"]
+  },
+  lateral_pelvic_tilt: {
+    id:"lateral_pelvic_tilt", icon:"↔", label:"Lateral Pelvic Tilt", region:"Lumbar/Pelvis",
+    view:["anterior","posterior"],
+    description:"Unilateral elevation of the iliac crest. May indicate leg length discrepancy or hip abductor weakness.",
+    tight_muscles:["Ipsilateral QL","Ipsilateral TFL","Ipsilateral hip adductors"],
+    weak_muscles:["Contralateral gluteus medius","Contralateral QL"],
+    kinetic_chain:"Lateral pelvic tilt → scoliotic compensation → contralateral shoulder elevation → cervical lateral flexion",
+    exercises:["Side-lying hip abduction","Clamshells","Standing hip abduction","QL stretch"]
+  },
+  genu_valgum: {
+    id:"genu_valgum", icon:"🦵", label:"Genu Valgum (Knock Knees)", region:"Knee",
+    view:["anterior","posterior"],
+    description:"Medial deviation of the knee relative to the mechanical axis. Increases medial compartment and patellofemoral loading.",
+    tight_muscles:["TFL","IT band","Hip adductors","Medial hamstrings"],
+    weak_muscles:["Gluteus medius","Gluteus maximus","VMO","Hip external rotators"],
+    kinetic_chain:"Genu valgum → hip IR → PFPS risk → medial ankle pronation → plantar fascia overload",
+    exercises:["Clamshells","Monster walks","Single-leg squat with knee tracking","VMO terminal extensions"]
+  },
+  genu_varum: {
+    id:"genu_varum", icon:"🦴", label:"Genu Varum (Bow Legs)", region:"Knee",
+    view:["anterior","posterior"],
+    description:"Lateral deviation of the knee. Increases lateral compartment loading and IT band tension.",
+    tight_muscles:["IT band","Biceps femoris","Hip ER","Lateral gastrocnemius"],
+    weak_muscles:["Hip adductors","VMO","Medial gastrocnemius"],
+    kinetic_chain:"Genu varum → lateral knee overload → IT band syndrome → supinated foot posture",
+    exercises:["IT band foam rolling","Hip adductor strengthening","Lateral step-downs","Arch support"]
+  },
+  foot_pronation: {
+    id:"foot_pronation", icon:"🦶", label:"Foot Overpronation/Flat Arch", region:"Foot/Ankle",
+    view:["anterior","posterior"],
+    description:"Medial arch collapse with calcaneal eversion. The kinetic chain starting point for many lower limb issues.",
+    tight_muscles:["Gastrocnemius","Soleus","Peroneals","Plantar fascia"],
+    weak_muscles:["Tibialis posterior","FHL","Intrinsic foot muscles","Gluteus medius"],
+    kinetic_chain:"Pronation → tibial IR → genu valgum → hip IR → PFPS → LCS compensations",
+    exercises:["Short foot exercise","Calf raises","Tibialis posterior strengthening","Intrinsic foot doming"]
+  },
+  foot_supination: {
+    id:"foot_supination", icon:"🔺", label:"Foot Supination/High Arch", region:"Foot/Ankle",
+    view:["anterior","posterior"],
+    description:"Elevated medial arch with reduced shock absorption. Associated with lateral ankle instability.",
+    tight_muscles:["IT band","Peroneals","Plantar fascia","Gastroc lateral head"],
+    weak_muscles:["Peroneals (with instability)","Intrinsic foot muscles"],
+    kinetic_chain:"Supination → lateral ankle instability → lateral knee overload → genu varum compensation",
+    exercises:["Peroneal strengthening","Single-leg balance","Lateral band walks","Arch mobilisation"]
+  },
+  scoliosis: {
+    id:"scoliosis", icon:"〰", label:"Scoliosis / Lateral Spinal Curve", region:"Thoracic/Lumbar",
+    view:["posterior"],
+    description:"Lateral deviation of the spine with rotational component. Refer for Cobb angle measurement if suspected structural.",
+    tight_muscles:["Ipsilateral concave paraspinals","Ipsilateral QL","Ipsilateral hip musculature"],
+    weak_muscles:["Contralateral paraspinals","Convex-side core stabilisers"],
+    kinetic_chain:"Scoliosis → rib cage rotation → shoulder height asymmetry → pelvic obliquity → leg length inequality",
+    exercises:["Schroth breathing","Concave-side stretch","Convex-side strengthening","Pilates side-lying"]
+  },
+  head_tilt: {
+    id:"head_tilt", icon:"↙", label:"Lateral Head Tilt", region:"Cervical",
+    view:["anterior","posterior"],
+    description:"Ipsilateral ear approaches ipsilateral shoulder. May indicate upper trap tightness or C-spine dysfunction.",
+    tight_muscles:["Ipsilateral upper trapezius","Ipsilateral SCM","Ipsilateral scalenes","Ipsilateral levator scapulae"],
+    weak_muscles:["Contralateral lateral neck flexors","Contralateral upper trapezius"],
+    kinetic_chain:"Head tilt → cervical lateral flexion → ipsilateral shoulder elevation → compensatory thoracic curve",
+    exercises:["Contralateral cervical lateral flexion stretch","Upper trap SMR","Levator scapulae stretch"]
+  },
+  scapular_winging: {
+    id:"scapular_winging", icon:"🪶", label:"Scapular Winging", region:"Thoracic/Shoulder",
+    view:["posterior"],
+    description:"Medial border or inferior angle of scapula lifts from thoracic wall. Serratus anterior or trapezius dysfunction.",
+    tight_muscles:["Pec minor","Pec major","Short head biceps"],
+    weak_muscles:["Serratus anterior","Lower trapezius","Rhomboids"],
+    kinetic_chain:"Scapular winging → reduced force couple → rotator cuff overload → impingement → biceps tendinopathy",
+    exercises:["Serratus push-up plus","Wall slides","Lower trap Y raises","Scapular protraction resistance"]
+  },
+};
 
 // ─── SEVERITY COLOUR MAPS ────────────────────────────────────────────────────
 const SEVERITY_COLOR = { mild:"#ffb300", moderate:"#ff6b35", severe:"#ff4d6d" };
@@ -1219,4 +1343,4 @@ function PostureDefectModule() {
 // HOME MODULE — App Introduction & Feature Overview
 // ═══════════════════════════════════════════════════════════════════════════
 
-export { PatientDatabasePanel, PatientProfileModal, PatientCard, loadPatientDB, savePatientDB, genId, getInitials, avatarGrad, PostureDefectModule, PostureDefectDetail };
+export { DB_KEY, DEMO_PATIENTS, getInitials, AVATAR_GRADIENTS, avatarGrad, PatientCard, PatientDatabasePanel, PatientProfileModal, loadPatientDB, savePatientDB, genId, POSTURE_DEFECTS, PostureDefectDetail, PostureDefectModule };

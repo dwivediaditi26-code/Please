@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC } from './theme.jsx';
-import { PC, clamp } from './shared.jsx';
-
+import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
+import { clamp } from './PostureCamera.jsx';
 function HomeModule({ onNav }) {
   const PC = getC();
   const features = [

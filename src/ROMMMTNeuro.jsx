@@ -1,9 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC } from './theme.jsx';
-import { ALL_TESTS, DERMATOMES, NEURAL_TENSION, RED_FLAGS_NEURO, REFLEXES, RESTRICTION_GRADE, ROM_DATA, ROM_REDFLAGS, ROM_REGIONS, mid, px, vis } from './shared.jsx';
-import { genROMSoap } from './TreatmentModules.jsx';
-import { AdvancedMeasurementEngine, renderPostureOverlay } from './PostureCamera.jsx';
-
+import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
+import { ROM_DATA, ROM_REGIONS, RESTRICTION_GRADE, ROM_REDFLAGS, ALL_TESTS } from './TreatmentModules.jsx';
 function ROMModule({data,set}){
   const [region,setRegion]=useState(ROM_REGIONS[0]);
   const [selected,setSelected]=useState(null);
@@ -814,6 +811,24 @@ function MMTModule({data,set}){
 // NEUROLOGICAL ASSESSMENT MODULE — Full Comprehensive Integration
 // ═══════════════════════════════════════════════════════════════════════════════
 
+const DERMATOMES = [
+  { id:"n_c3",  level:"C3",  region:"Posterior neck / occipital",         reflex:null,    myotome:"Neck lateral flexion",         disc:"C2/3" },
+  { id:"n_c4",  level:"C4",  region:"Cape (shoulder top)",                reflex:null,    myotome:"Shoulder elevation (trap)",    disc:"C3/4" },
+  { id:"n_c5",  level:"C5",  region:"Lateral arm / deltoid badge",        reflex:"Biceps (C5–C6)", myotome:"Shoulder abduction / elbow flex", disc:"C4/5" },
+  { id:"n_c6",  level:"C6",  region:"Lateral forearm / thumb + index",    reflex:"Brachioradialis", myotome:"Wrist extension (ECRL/ECRB)",   disc:"C5/6" },
+  { id:"n_c7",  level:"C7",  region:"Middle finger",                       reflex:"Triceps (C6–C7)", myotome:"Elbow extension / wrist flex",  disc:"C6/7" },
+  { id:"n_c8",  level:"C8",  region:"Little + ring finger / medial FA",   reflex:null,    myotome:"Finger flexion / intrinsics",  disc:"C7/T1" },
+  { id:"n_t1",  level:"T1",  region:"Medial forearm / elbow",             reflex:null,    myotome:"Finger abduction (1st dorsal)", disc:"T1/2" },
+  { id:"n_l1",  level:"L1",  region:"Groin / upper anterior thigh",       reflex:null,    myotome:"Hip flexion",                  disc:"L1/2" },
+  { id:"n_l2",  level:"L2",  region:"Anterior + medial thigh",            reflex:null,    myotome:"Hip flexion / knee ext (assist)", disc:"L2/3" },
+  { id:"n_l3",  level:"L3",  region:"Medial knee / lower anterior thigh", reflex:"Patella (L3–L4)", myotome:"Knee extension (quad)",      disc:"L3/4" },
+  { id:"n_l4",  level:"L4",  region:"Medial leg / medial foot",           reflex:"Patella (L3–L4)", myotome:"Ankle dorsiflexion (TA)",    disc:"L4/5" },
+  { id:"n_l5",  level:"L5",  region:"Dorsum foot / 1st–2nd web space",    reflex:null,    myotome:"Great toe extension (EHL)",    disc:"L4/5" },
+  { id:"n_s1",  level:"S1",  region:"Lateral foot / heel / sole",         reflex:"Achilles (S1)", myotome:"Ankle plantarflexion (gastroc)", disc:"L5/S1" },
+  { id:"n_s2",  level:"S2",  region:"Posterior thigh",                    reflex:null,    myotome:"Knee flexion (hamstrings)",    disc:"S1/2" },
+  { id:"n_s3",  level:"S3",  region:"Medial thigh / perineum",            reflex:null,    myotome:"Bowel/bladder sphincter",      disc:"—" },
+  { id:"n_s4s5",level:"S4/5",region:"Perianal / saddle",                  reflex:"Anal wink", myotome:"Sphincter tone",           disc:"Cauda equina" },
+];
 
 const MYOTOMES = [
   { level:"C1–C2", action:"Neck flexion",              test:"Active neck curl against gravity", compensation:"SCM dominant — look for chin poke" },
@@ -832,8 +847,96 @@ const MYOTOMES = [
   { level:"S2",    action:"Knee flexion (hamstring)",   test:"Prone knee flex 90° resist",      compensation:"Gastrocnemius, gluteus max" },
 ];
 
+const REFLEXES = [
+  // ── Deep Tendon Reflexes (LMN indicators) ────────────────────────────────
+  { id:"n_ref_jaw",     label:"Jaw Jerk",               level:"V (trigeminal)",  group:"DTR", technique:"Patient relaxed, mouth slightly open. Place finger on chin, tap with reflex hammer. Normal = minimal jaw closure. Brisk = pathological.", finding:"Brisk/exaggerated = UMN lesion ABOVE the pons (supranuclear). Normal or absent = brainstem/LMN. Urgency: CNS referral if brisk.", pathological:true, umnSign:true },
+  { id:"n_ref_bicep",   label:"Biceps",                  level:"C5–C6",           group:"DTR", technique:"Elbow flexed to ~90°. Place thumb firmly on biceps tendon in antecubital fossa. Tap thumb with reflex hammer. Observe/feel for elbow flexion.", finding:"Diminished or absent = C5/C6 LMN (radiculopathy, peripheral nerve). Brisk/hyperactive = UMN (myelopathy, cord compression above C5). Asymmetry always significant.", pathological:false, umnSign:false },
+  { id:"n_ref_brad",    label:"Brachioradialis",         level:"C5–C6",           group:"DTR", technique:"Forearm in neutral (semi-pronated), resting on thigh. Tap brachioradialis tendon 2–3cm proximal to radial styloid. Normal = forearm flexion + slight supination.", finding:"Absent = C5/6 radiculopathy. INVERTED reflex: BR absent + finger flexors contract = pathognomonic of cervical myelopathy at C5/6 — URGENT.", pathological:false, umnSign:false },
+  { id:"n_ref_tricep",  label:"Triceps",                 level:"C6–C7",           group:"DTR", technique:"Support arm at 90° abduction or drape over forearm. Tap triceps tendon directly above olecranon. Observe elbow extension.", finding:"Diminished or absent = C7 radiculopathy (most common cause). Absent bilaterally = peripheral polyneuropathy or motor neuron disease. Brisk = UMN above C7.", pathological:false, umnSign:false },
+  { id:"n_ref_patella", label:"Patella (Quadriceps)",    level:"L3–L4",           group:"DTR", technique:"Patient seated with legs hanging freely (or supine with knee supported at 20–30°). Tap patellar tendon briskly. Observe quadriceps contraction / knee extension.", finding:"Diminished = L3/4 disc herniation (most common). Absent = severe radiculopathy or femoral neuropathy. Brisk + Babinski = cord/UMN.", pathological:false, umnSign:false },
+  { id:"n_ref_achilles",label:"Achilles (Plantar Flex)", level:"S1",              group:"DTR", technique:"Knee flexed, hip ER (patient kneeling or prone). Gently dorsiflex foot to tension tendon. Tap Achilles tendon. Observe plantarflexion jerk.", finding:"Diminished or absent = S1 radiculopathy (L5/S1 disc) OR peripheral neuropathy (diabetes, alcohol). Most sensitive indicator of S1 root. Absent bilaterally = peripheral polyneuropathy.", pathological:false, umnSign:false },
+  { id:"n_ref_cremast", label:"Cremaster Reflex",        level:"L1–L2",           group:"DTR", technique:"Lightly stroke the superior medial thigh. Normal = ipsilateral testicular elevation (cremasteric muscle contraction).", finding:"Absent = L1/2 radiculopathy, femoral neuropathy, or cauda equina. Absent bilaterally with lower limb signs = UMN lesion or cauda equina syndrome — urgent.", pathological:false, umnSign:false },
+  { id:"n_ref_plantar", label:"Plantar Reflex (Normal)", level:"S1–S2",           group:"DTR", technique:"Stroke lateral plantar surface heel-to-ball with blunt object (Babinski hammer or key). Normal adult response = toe plantarflexion (downgoing).", finding:"Normal adult = plantarflexion of toes (NEGATIVE/normal response). Upgoing = Babinski sign (see below — UMN). Absent response = possible LMN or dense sensory loss.", pathological:false, umnSign:false },
 
+  // ── UMN Pathological Signs ────────────────────────────────────────────────
+  { id:"n_ref_babinski",label:"Babinski Sign",           level:"UMN — Corticospinal Tract", group:"UMN", technique:"Patient supine and relaxed. Use blunt object (Babinski hammer handle, key). Stroke firmly from lateral heel along plantar surface curving medially to the ball of the foot. Observe great toe and other toes. POSITIVE = great toe extends (dorsiflexes) upward ± fanning of toes (Babinski response). NEGATIVE (normal adult) = toes plantarflex (curl down).", finding:"POSITIVE (ABNORMAL in adults): Extension of hallux ± toe fanning = corticospinal tract (UMN) lesion anywhere from motor cortex to S1 cord level. Causes: stroke, cord compression, myelopathy, MS, TBI, ALS. NEGATIVE: Normal in adults. Note: Normal in infants <12 months (tract unmyelinated).", pathological:true, umnSign:true },
+  { id:"n_ref_chaddock",label:"Chaddock Sign",           level:"UMN — Alternative Babinski", group:"UMN", technique:"Stroke the lateral dorsum of the foot from the lateral malleolus toward the little toe. Alternative Babinski variant — useful when plantar skin is very calloused.", finding:"POSITIVE = upgoing great toe = same significance as Babinski. Use as confirmatory test when Babinski equivocal. Positive = UMN lesion.", pathological:true, umnSign:true },
+  { id:"n_ref_oppenheim",label:"Oppenheim Sign",         level:"UMN — Babinski variant",    group:"UMN", technique:"Apply firm pressure with knuckles or thumb down the tibial crest (anterior shin), sliding distally from below the knee to the ankle.", finding:"POSITIVE = hallux extension (upgoing toe) = UMN lesion. Same clinical significance as Babinski. Use when Babinski is equivocal or patient refuses plantar stimulation.", pathological:true, umnSign:true },
+  { id:"n_ref_hoffmann",label:"Hoffmann's Sign",         level:"UMN — Cervical Cord",       group:"UMN", technique:"Hold patient's middle finger loosely with forearm slightly pronated. Flick the distal phalanx DOWNWARD (releasing suddenly). Observe thumb and index finger. POSITIVE = thumb FLEXES and adducts involuntarily.", finding:"POSITIVE = upper motor neuron sign indicating corticospinal tract lesion at or above C8/T1. Suggests cervical myelopathy or cord compression. Always combined with clinical context — can be normal in hyperreflexic individuals. Bilateral positive = more significant. REFER for MRI cervical spine.", pathological:true, umnSign:true },
+  { id:"n_ref_trommer", label:"Trömner's Sign",          level:"UMN — Cervical Cord",       group:"UMN", technique:"Hold middle finger from above. Flick the PALMAR surface of the middle finger's distal phalanx UPWARD (reverse of Hoffmann's). Observe thumb flexion.", finding:"POSITIVE = thumb and other finger flexion = UMN sign. Equivalent significance to Hoffmann's. Some clinicians find it more reliable. Bilateral positive = myelopathy suspected.", pathological:true, umnSign:true },
 
+  // ── Clonus Tests ──────────────────────────────────────────────────────────
+  { id:"n_ref_clonus_ankle", label:"Ankle Clonus",       level:"UMN — S1/S2 Cord",         group:"Clonus", technique:"Support knee in slight flexion. Cup the foot and apply sudden, sustained DORSIFLEXION pressure, maintaining force. Count rhythmic beats of plantarflexion–dorsiflexion oscillation. Time how long it sustains. POSITIVE = 3 or more sustained beats.", finding:"POSITIVE (>3 beats sustained) = UMN lesion. Mechanism: gamma motor neuron hyperactivity with loss of descending inhibition. Causes: cord compression, cervical/thoracic myelopathy, stroke, MS, cerebral palsy. 1–2 beats = equivocal (can be normal in anxious patients). Sustained (>10 beats) = severe UMN involvement — URGENT MRI + neurosurgical referral.", pathological:true, umnSign:true },
+  { id:"n_ref_clonus_knee",  label:"Patellar Clonus",    level:"UMN — L3/L4",               group:"Clonus", technique:"Patient supine with leg extended. Grasp patella between thumb and index finger. Apply sudden, sustained DOWNWARD (distal) thrust. Maintain downward pressure and observe for rhythmic patellar oscillation.", finding:"POSITIVE = repeated patellofemoral oscillations = UMN lesion at or above L3/4. Less commonly used than ankle clonus but clinically significant. Indicates spasticity and loss of descending inhibition.", pathological:true, umnSign:true },
+  { id:"n_ref_clonus_wrist", label:"Wrist Clonus",       level:"UMN — Cervical Cord",       group:"Clonus", technique:"Support forearm. Apply sudden sustained EXTENSION force to the wrist. Observe for rhythmic flexion–extension oscillation.", finding:"POSITIVE = wrist clonus = UMN sign suggesting cervical cord involvement. Combined with Hoffmann's and Babinski = very strong myelopathy pattern — urgent MRI cervical spine.", pathological:true, umnSign:true },
+
+  // ── LMN Signs & Pattern Tests ─────────────────────────────────────────────
+  { id:"n_ref_lmn_fascic",  label:"Fasciculations",      level:"LMN — Anterior Horn",       group:"LMN", technique:"Inspect muscle belly at rest for spontaneous, irregular, brief twitching. Use tangential lighting. May observe in tongue, limbs, trunk. Cannot be voluntarily controlled.", finding:"POSITIVE = visible fasciculations = lower motor neuron / anterior horn cell pathology. DDx: ALS/MND (urgent), benign fasciculation syndrome (common), electrolyte imbalance, medication. Combined with weakness and wasting = motor neuron disease pattern. REFER neurology.", pathological:true, umnSign:false },
+  { id:"n_ref_lmn_wasting", label:"Muscle Wasting / Atrophy", level:"LMN — Denervation",   group:"LMN", technique:"Inspect and measure limb circumference bilaterally at standardised points (10cm above/below medial knee joint line; 15cm below acromion). >1cm asymmetry = significant.", finding:"POSITIVE = visible/measurable wasting = denervation (LMN) pattern. Causes: nerve root compression with chronic axonal loss, peripheral nerve injury, motor neuron disease. Combined with weakness in myotomal pattern = radiculopathy with axonal involvement. Note: atrophy also occurs with disuse — differentiate with EMG.", pathological:true, umnSign:false },
+  { id:"n_ref_lmn_tone",    label:"Muscle Tone Assessment", level:"UMN / LMN differentiation", group:"LMN", technique:"Assess tone passively. For UMN: passive limb movement — catch/release pattern (clasp-knife spasticity) or lead-pipe rigidity. For LMN: passive movement feels flaccid, no resistance. Assess arms (flex/extend elbow, rotate wrist) and legs (roll leg, flex knee quickly).", finding:"SPASTIC (UMN): velocity-dependent resistance, clasp-knife release, associated hyperreflexia. RIGID (extrapyramidal): lead-pipe or cogwheel, not velocity-dependent, associated with Parkinsonism. FLACCID (LMN): reduced resistance, associated hyporeflexia and wasting — nerve root, peripheral nerve, or anterior horn. NORMAL: smooth with consistent low resistance.", pathological:false, umnSign:false },
+  { id:"n_ref_pronator",   label:"Pronator Drift",        level:"UMN — Corticospinal",       group:"LMN", technique:"Patient stands with eyes CLOSED, arms outstretched in supination (palms up), held for 10–20 seconds. Observe for downward drift, pronation, or finger flexion of one arm.", finding:"POSITIVE = downward drift with pronation of one arm = contralateral corticospinal (UMN) lesion. Very sensitive early sign. Also seen in: early stroke, space-occupying lesion, TBI. Arm that drifts = ipsilateral hemisphere lesion (contralateral arm affected). If both drift with eyes open = cerebellar / proprioceptive issue.", pathological:true, umnSign:true },
+];
+
+const NEURAL_TENSION = [
+  {
+    id:"nt_slr", label:"Straight Leg Raise (SLR)",
+    nerve:"L4–S1 (sciatic / lumbosacral roots)", sensitivity:"91%", specificity:"26%",
+    procedure:"Patient supine. Lift leg with knee EXTENDED. Note angle of symptom onset. At positive angle, sensitise by adding cervical flexion + ankle DF.",
+    positive:"Radicular pain/paraesthesia in distribution below knee between 30–70°. Above 70° = hamstring tightness.",
+    differentiation:"Add ankle DF: worse = neural. Add cervical flex: worse = neuromeningeal. Remove DF at max angle: improves = neural tension.",
+    pattern:"L4/5 disc: reproduces leg/foot symptoms. High specificity if crossed SLR positive.",
+  },
+  {
+    id:"nt_slump", label:"Slump Test",
+    nerve:"Entire neuraxis (spinal cord + nerve roots)", sensitivity:"84%", specificity:"83%",
+    procedure:"Seated. Step 1: Slump trunk (thoracic kyphosis). Step 2: Flex neck. Step 3: Extend knee. Step 4: Add ankle DF. Positive = symptoms reproduced. Release neck extension.",
+    positive:"Reproduction of symptoms relieved by neck extension = neural tension positive. More sensitive than SLR.",
+    differentiation:"If symptoms increase with neck flex but reduce with neck extension = neural. If no change = hamstring tightness.",
+    pattern:"Central sensitisation shows bilateral symptoms. Disc herniation = unilateral leg symptoms.",
+  },
+  {
+    id:"nt_ultt1", label:"ULTT1 — Median Nerve",
+    nerve:"Median nerve / C5–C7", sensitivity:"72%", specificity:"33%",
+    procedure:"Shoulder depress → abduct 90° → ER → extend elbow → supinate forearm → extend wrist/fingers. Add cervical lateral flex (contralateral).",
+    positive:"Paraesthesia in median nerve distribution (thumb/index/middle). Symptom change with cervical sensitisation.",
+    differentiation:"Change symptoms by adding/removing ipsilateral vs contralateral cervical side flex.",
+    pattern:"C5/6/7 radiculopathy. Thoracic outlet syndrome. Carpal tunnel (distal reproduction).",
+  },
+  {
+    id:"nt_ultt2", label:"ULTT2 — Radial Nerve",
+    nerve:"Radial nerve / C6–C8", sensitivity:"72%", specificity:"33%",
+    procedure:"Shoulder depress + ER → abduct 90° → IR → extend elbow → pronate forearm → flex wrist.",
+    positive:"Symptoms in posterior forearm / radial nerve distribution.",
+    differentiation:"Pronate vs supinate forearm — radial nerve = worse with pronation.",
+    pattern:"Tennis elbow, de Quervain's with radial nerve component. C6/7 radiculopathy.",
+  },
+  {
+    id:"nt_ultt3", label:"ULTT3 — Ulnar Nerve",
+    nerve:"Ulnar nerve / C8–T1", sensitivity:"69%", specificity:"N/A",
+    procedure:"Shoulder depress + abduct → flex elbow → pronate forearm → extend wrist + fingers.",
+    positive:"Paraesthesia in ring/little finger distribution. Medial elbow symptoms.",
+    differentiation:"Adds cubital tunnel assessment. Positive with elbow flexion as sensitiser.",
+    pattern:"Cubital tunnel syndrome. C8/T1 radiculopathy. TOS (lower trunk).",
+  },
+  {
+    id:"nt_femoral", label:"Femoral Nerve Tension Test (FNTT)",
+    nerve:"Femoral nerve / L2–L4", sensitivity:"88%", specificity:"N/A",
+    procedure:"Patient prone. Flex knee to 90°. Therapist extends hip. Add cervical extension to sensitise. Positive = anterior thigh pain / L2–L4 distribution.",
+    positive:"Anterior thigh and groin pain reproduced with hip extension + knee flexion.",
+    differentiation:"Differentiate from hip pathology: add cervical extension — neural involvement increases symptoms.",
+    pattern:"L2/3/4 disc herniation. Upper lumbar radiculopathy. Femoral neuropathy.",
+  },
+];
+
+const RED_FLAGS_NEURO = [
+  { id:"nrf_cauda",     label:"Cauda Equina Syndrome",   severity:"EMERGENCY",   description:"Saddle anaesthesia (S3–S5), bilateral leg weakness, bowel/bladder incontinence or retention", action:"999 / Emergency Department NOW. MRI within 24h.", icon:"🆘" },
+  { id:"nrf_myelopathy",label:"Cord Compression / Myelopathy", severity:"URGENT", description:"Positive Babinski, Hoffmann's, clonus, hyperreflexia + long tract signs, progressive spastic gait", action:"Urgent neurosurgical referral. No manipulation.", icon:"🔴" },
+  { id:"nrf_prog_weak", label:"Progressive Neurological Weakness", severity:"URGENT", description:"Weakness deteriorating over days/weeks, widespread myotomal involvement, bilateral findings", action:"Urgent MRI + neurological referral within 48h.", icon:"🔴" },
+  { id:"nrf_saddle",    label:"Saddle Anaesthesia",       severity:"EMERGENCY",   description:"Loss of sensation perineum, anus, inner thighs (S3–S5 distribution)", action:"Emergency Department immediately.", icon:"🆘" },
+  { id:"nrf_umnsigns",  label:"Upper Motor Neuron Signs", severity:"URGENT",      description:"Babinski positive, hyperreflexia, spasticity, sustained clonus (>3 beats)", action:"Neurology referral. Cervical/thoracic MRI.", icon:"🔴" },
+  { id:"nrf_bilateral", label:"Bilateral Neurological Signs", severity:"URGENT",  description:"Bilateral leg weakness, bilateral dermatomal loss, bilateral reflex changes", action:"Urgent referral — central disc, cord pathology.", icon:"🔴" },
+  { id:"nrf_sphincter", label:"Sphincter Dysfunction",    severity:"EMERGENCY",   description:"New onset bowel/bladder dysfunction alongside back/leg pain", action:"Emergency admission.", icon:"🆘" },
+];
 
 const NERVE_ROOT_MAP = {
   "C5": { dermSensory:"Lateral arm", reflex:"Biceps", myotome:"Shoulder abduction, elbow flex", disc:"C4/5", peripheral:"Musculocutaneous / axillary" },
@@ -2069,6 +2172,8 @@ const POSE_CONNECTIONS = [
   [23,25],[25,27],[27,29],[29,31],[27,31],   // left leg
   [24,26],[26,28],[28,30],[30,32],[28,32],   // right leg
 ];
+const KEY_JOINTS = { 0:"Nose",11:"L.Shoulder",12:"R.Shoulder",13:"L.Elbow",14:"R.Elbow",15:"L.Wrist",16:"R.Wrist",23:"L.Hip",24:"R.Hip",25:"L.Knee",26:"R.Knee",27:"L.Ankle",28:"R.Ankle",31:"L.Foot",32:"R.Foot" };
+const TRACKING_STATES = { IDLE:"idle", LOADING:"loading", CALIBRATING:"calibrating", DETECTING:"detecting", STABLE:"stable", LOST:"lost" };
 
 // ─── TrackingQualityEngine ────────────────────────────────────────────────────
 function computeQuality(lm) {
@@ -2619,4 +2724,4 @@ function UploadedPhotoOverlay({ photoUrl, landmarks, view }) {
 // ─── Main PostureCameraModule — Professional Physiotherapy Assessment Camera ──
 
 
-export { ROMModule, MMTModule, NeurologicalModule, CollapsibleHow, computeQuality, createSmoother };
+export { ROMModule, MMTModule, NeurologicalModule, KEY_JOINTS, TRACKING_STATES, computeQuality, createSmoother, CalibrationSystem, SkeletonRenderer, BodyAlignmentGuide, TrackingStateBar, CameraView, CameraControls, CameraPositionGuide, PoseTracker, DERMATOMES, REFLEXES, NEURAL_TENSION, RED_FLAGS_NEURO };

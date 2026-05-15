@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC } from './theme.jsx';
-import { FMS_DB, FMS_STORAGE_KEY2, NKT_REGIONS, mid } from './shared.jsx';
-
+import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
+import { NKT_REGIONS, FMS_DB, FMS_STORAGE_KEY2, loadFMSReport, saveFMSReport } from './SubjectiveKinetic.jsx';
 function FMASection(){
   const [selectedTests,setSelectedTests]=useState(()=>{
     const saved=loadFMSReport();
@@ -982,4 +981,4 @@ function CyriaxRegionTests({ data, set }) {
 
 // ─── DIAGNOSIS ENGINE ────────────────────────────────────────────────────────
 
-export { FMASection, FasciaSection, NKTSection, FasciaBodyMap, CyriaxRegionTests };
+export { FMASection, FasciaSection, NKTSection, CyriaxRegionTests };

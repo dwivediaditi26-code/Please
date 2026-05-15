@@ -1,106 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC } from './theme.jsx';
-
-function cyriaxAutoReason(regionId, data) {
-  const reg = CYRIAX_REGIONS_DATA[regionId];
-  if (!reg) return null;
-
-  const v = (id) => data[`cyriax_${regionId}_${id}`] || "";
-  const findings = [];
-  const diagnoses = [];
-  const treatment = [];
-  let tissueType = "";
-  let confidence = "Low";
-
-  // Check resisted tests for tissue type
-  const resistedResults = reg.resistedTests.map(t => ({ id: t.id, result: v(`res_${t.id}`), label: t.label, muscle: t.muscle }));
-  const strongPainful = resistedResults.filter(r => r.result === "Strong & Painful");
-  const weakPainless = resistedResults.filter(r => r.result === "Weak & Painless");
-  const weakPainful = resistedResults.filter(r => r.result === "Weak & Painful");
-  const strongPainless = resistedResults.filter(r => r.result === "Strong & Painless");
-
-  // Passive ROM / end-feel
-  const passiveEndfeels = reg.passiveROM.map(t => ({ id: t.id, ef: v(`pass_ef_${t.id}`), label: t.label }));
-  const abnormalEndfeels = passiveEndfeels.filter(e => e.ef && !["Normal/Capsular","Tissue Approximation (normal)","Hard (normal at 0°)","Bone-to-Bone (normal at 0°)"].some(n => e.ef.startsWith(n)));
-
-  // Active ROM
-  const activeROMs = reg.activeROM.map(t => ({ id: t.id, pain: v(`act_pain_${t.id}`), limited: v(`act_limited_${t.id}`), label: t.label }));
-  const painfulMovements = activeROMs.filter(r => r.pain && r.pain.includes("Pain"));
-  const limitedMovements = activeROMs.filter(r => r.limited && r.limited !== "Full" && r.limited !== "Normal");
-
-  // Capsular pattern detection
-  const capsPattern = v("capsular_pattern");
-  const hasCapsular = capsPattern === "Yes — capsular pattern confirmed";
-
-  // TISSUE TYPE DETERMINATION
-  if (weakPainful.length > 0) {
-    tissueType = "⚠️ SERIOUS CONTRACTILE LESION";
-    confidence = "High";
-    findings.push(`🚨 SERIOUS: ${weakPainful.map(r => r.label).join(", ")} — Weak & Painful`);
-    diagnoses.push({ name:"Serious Contractile Lesion", confidence:"High", detail:"Weak + painful = serious: complete rupture + surrounding tissue damage, fracture through insertion, or neoplasm. URGENT imaging required." });
-    treatment.push("URGENT: Do NOT load or treat. Refer for imaging (X-ray + MRI) immediately.", "Rule out fracture, complete rupture, neoplasm.", "Surgical consultation if rupture confirmed.");
-  } else if (weakPainless.length > 0) {
-    tissueType = "⚡ NEUROLOGICAL DEFICIT OR COMPLETE RUPTURE";
-    confidence = "High";
-    findings.push(`⚡ Neurological finding: ${weakPainless.map(r => `${r.label} (${r.muscle})`).join(", ")} — Weak & Painless`);
-    diagnoses.push({ name:"Neurological Deficit or Complete Structural Rupture", confidence:"High", detail:"Weak + painless = nerve root lesion (check dermatomes + reflexes) OR complete rupture (no structure left to be painful)." });
-    treatment.push("Neurological assessment: dermatomes, myotomes, reflexes.", "If neurological: nerve conduction study, MRI spine.", "If complete rupture: refer orthopaedic.");
-  } else if (strongPainful.length > 0 && abnormalEndfeels.length === 0) {
-    tissueType = "🎯 CONTRACTILE TISSUE LESION";
-    confidence = "High";
-    findings.push(`Minor contractile lesion: ${strongPainful.map(r => `${r.label} (${r.muscle})`).join(", ")}`);
-    strongPainful.forEach(r => {
-      diagnoses.push({ name:`${r.muscle} — Tendinopathy / Partial Tear`, confidence:"High", detail:`Strong & Painful on ${r.label}. Contractile unit generates force but lesion provoked. Minor lesion at muscle, MTJ, tendon, or tenoperiosteal junction.` });
-      treatment.push(`Deep Transverse Friction Massage (DTFM) to exact palpated lesion site — ${r.muscle}`, `Eccentric loading protocol for ${r.muscle}`, "Load management — avoid aggravating movements initially");
-    });
-  } else if (hasCapsular || (abnormalEndfeels.length > 0 && strongPainful.length === 0 && weakPainless.length === 0)) {
-    tissueType = "🔒 INERT TISSUE LESION";
-    confidence = "High";
-    if (hasCapsular) {
-      findings.push(`Capsular pattern confirmed for ${reg.name || regionId}`);
-      const cp = CAPSULAR_PATTERNS[regionId];
-      if (cp) diagnoses.push({ name:`Capsulitis / ${cp.dx}`, confidence:"High", detail:`Capsular pattern: ${cp.pattern}. Inert tissue (capsule) involved. Consider: ${cp.dx}.` });
-      treatment.push("Grade III–IV joint mobilisation (address capsular restriction)", "Sustained end-range stretching", "Heat before mobilisation, ice after", "Progressive ROM restoration");
-    }
-    abnormalEndfeels.forEach(e => {
-      findings.push(`Abnormal end-feel at ${e.label}: ${e.ef}`);
-      const efData = ENDFEEL_DATA[e.ef];
-      if (efData) {
-        diagnoses.push({ name:`${e.ef} end-feel at ${e.label}`, confidence:"Moderate", detail:efData.abnormal });
-        treatment.push(efData.tx);
-      }
-    });
-  } else if (strongPainless.length === resistedResults.filter(r => r.result).length && resistedResults.filter(r => r.result).length > 0) {
-    tissueType = "✅ ALL CONTRACTILE TESTS NORMAL";
-    confidence = "Moderate";
-    findings.push("All resisted tests strong and painless — contractile tissue normal");
-    diagnoses.push({ name:"Inert Tissue Pathology (all contractile normal)", confidence:"Moderate", detail:"Pain is not arising from contractile tissue. Inert structures (capsule, ligament, bursa, disc) are the source. Focus passive assessment." });
-    treatment.push("Focus on passive assessment and joint play", "Inert tissue treatment: mobilisation, manipulation, support");
-  }
-
-  // Painful arc detection
-  const painArc = v("painful_arc");
-  if (painArc && painArc !== "None") {
-    findings.push(`Painful arc: ${painArc}`);
-    if (painArc.includes("Impingement")) diagnoses.push({ name:"Subacromial Impingement (painful arc)", confidence:"Moderate", detail:"Pain 60–120° = subacromial arc = supraspinatus or bursa impingement." });
-  }
-
-  // Related assessment suggestions
-  const nextTests = [];
-  if (tissueType.includes("CONTRACTILE")) {
-    nextTests.push("Palpate exact lesion site (deep transverse friction point)", "Ultrasound imaging to confirm partial vs complete lesion", "Neural tension tests if referred symptoms");
-  }
-  if (tissueType.includes("INERT") || hasCapsular) {
-    nextTests.push("X-ray (OA staging)", "Joint play assessment (grade mobility)", "Arthroscopy referral if springy end-feel (loose body)", "MRI if empty end-feel (serious pathology)");
-  }
-  if (tissueType.includes("NEUROLOGICAL")) {
-    nextTests.push("Full neurological exam (dermatomes, myotomes, reflexes)", "MRI spine", "Nerve conduction study + EMG", "Neurosurgeon referral if progressive");
-  }
-
-  return { findings, diagnoses: diagnoses.slice(0, 5), treatment: [...new Set(treatment)].slice(0, 8), tissueType, confidence, nextTests, differentials: reg.differentials };
-}
-
-// ─── CYRIAX MODULE COMPONENT ─────────────────────────────────────────────────
+import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
+import { CYRIAX_STTT_INTERPRETATION, ENDFEEL_DATA, CAPSULAR_PATTERNS, CYRIAX_REGIONS_DATA, cyriaxAutoReason } from './SpecialTestsSection.jsx';
 function CyriaxModule({ data, set }) {
   const [region, setRegion] = useState("shoulder");
   const [tab, setTab] = useState("active");
@@ -1496,4 +1396,4 @@ function BodyChartModule({ data, set }) {
 
 
 
-export { CyriaxModule, BodyChartModule };
+export { CyriaxModule, SUBJECTIVE_SECTIONS, BodyChartModule };
