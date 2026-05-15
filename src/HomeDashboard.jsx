@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
 import { C, getC } from './theme.jsx';
+import { PC, clamp } from './shared.jsx';
 
 function HomeModule({ onNav }) {
   const PC = getC();
