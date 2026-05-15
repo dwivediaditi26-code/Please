@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { C, getC } from './theme.jsx';
+import { getC } from './theme.jsx';
 import { TEST_SVG, SPECIAL_TESTS_DATA } from './constants.jsx';
 
 function SpecialTestsSection({ data, set }) {

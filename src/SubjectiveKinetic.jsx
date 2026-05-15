@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { C, getC } from './theme.jsx';
+import { getC } from './theme.jsx';
 import { FMS_DB, FMS_STORAGE_KEY2, KC_REGIONS, MOVEMENTS, NKT_REGIONS, SUBJECTIVE_SECTIONS } from './shared.jsx';
 
 function SubjectiveModule({ data, set }) {

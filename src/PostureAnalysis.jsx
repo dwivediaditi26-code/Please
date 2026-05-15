@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { C, getC } from './theme.jsx';
+import { getC } from './theme.jsx';
 import { PC, POSTURE_MP_CDN, POSTURE_VIEW_META, clamp, mid, px, r1, vis } from './shared.jsx';
 
 function PostureAnalysisModule({ activePatient, set } = {}) {

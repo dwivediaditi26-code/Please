@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { C, getC } from './theme.jsx';
+import { getC } from './theme.jsx';
 import { DASH_OPTS, FABQ_OPTS, LEFS_OPTS, NKT_REGIONS, OM_CAT_COLOR, OUTCOME_DB, TSK_OPTS, mid } from './shared.jsx';
 
 function generateDiagnosis(data) {

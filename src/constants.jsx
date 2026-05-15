@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { C, getC } from './theme.jsx';
+import { getC } from './theme.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SPECIAL TESTS — 100+ Tests with How-To + SVG Illustrations

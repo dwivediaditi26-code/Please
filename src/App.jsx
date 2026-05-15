@@ -1,18 +1,16 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { useTheme, C, getC, MobileStyleInjector } from './theme.jsx';
-import { generateDiagnosis } from './DiagnosisErgoGait.jsx';
+import { useTheme, getC, MobileStyleInjector } from './theme.jsx';
+import { generateDiagnosis, ErgoModule, GaitModule } from './DiagnosisErgoGait.jsx';
 import { SubjectiveModule, KineticChainSection } from './SubjectiveKinetic.jsx';
 import { SpecialTestsSection } from './SpecialTestsSection.jsx';
 import { CyriaxModule, BodyChartModule } from './CyriaxBodyChart.jsx';
 import { FMASection, FasciaSection, NKTSection, CyriaxRegionTests } from './FMAFasciaNKT.jsx';
-import { ErgoModule, GaitModule } from './DiagnosisErgoGait.jsx';
 import { OutcomeMeasuresModule, SOAPNoteModule } from './OutcomesSOAP.jsx';
-import { ALL_TESTS, ExercisePrescriptionModule, PalpationModule, TreatmentTechniquesModule, TreatmentSessionLogModule } from './TreatmentModules.jsx';
+import { ExercisePrescriptionModule, PalpationModule, TreatmentTechniquesModule, TreatmentSessionLogModule } from './TreatmentModules.jsx';
 import { ROMModule, MMTModule, NeurologicalModule } from './ROMMMTNeuro.jsx';
 import { PostureCameraModule } from './PostureCamera.jsx';
 import { PostureAnalysisModule } from './PostureAnalysis.jsx';
-import { PostureDefectModule, PostureDefectDetail } from './PatientDatabase.jsx';
-import { PatientDatabasePanel, PatientProfileModal, loadPatientDB, savePatientDB, genId } from './PatientDatabase.jsx';
+import { PostureDefectModule, PostureDefectDetail, PatientDatabasePanel, PatientProfileModal, loadPatientDB, savePatientDB, genId } from './PatientDatabase.jsx';
 import { HomeModule, TherapistDashboardModule, PdfReportsModal } from './HomeDashboard.jsx';
 import { ALL_TESTS, C, DERMATOMES, KC_REGIONS, MOVEMENTS, NEURAL_TENSION, NKT_REGIONS, PC, RED_FLAGS_NEURO, REFLEXES, SUBJECTIVE_SECTIONS, clamp, mid } from './shared.jsx';
 

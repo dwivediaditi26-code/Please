@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { C, getC } from './theme.jsx';
+import { getC } from './theme.jsx';
 import { ALL_TESTS, DERMATOMES, NEURAL_TENSION, RED_FLAGS_NEURO, REFLEXES, RESTRICTION_GRADE, ROM_DATA, ROM_REDFLAGS, ROM_REGIONS, mid, px, vis } from './shared.jsx';
 
 function ROMModule({data,set}){

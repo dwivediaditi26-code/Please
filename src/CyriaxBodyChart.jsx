@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { C, getC } from './theme.jsx';
+import { getC } from './theme.jsx';
 
 function cyriaxAutoReason(regionId, data) {
   const reg = CYRIAX_REGIONS_DATA[regionId];

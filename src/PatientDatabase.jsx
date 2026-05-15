@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { C, getC } from './theme.jsx';
+import { getC } from './theme.jsx';
 import { POSTURE_DEFECTS } from './shared.jsx';
 
 const DB_KEY = "physio_patient_db_v1";

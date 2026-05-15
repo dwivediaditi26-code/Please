@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { C, getC } from './theme.jsx';
+import { getC } from './theme.jsx';
 import { ALL_EXERCISES, DASH_OPTS, ELBOW_PROTOCOLS, EXERCISE_DB, FABQ_OPTS, HIP_PROTOCOLS, KNEE_PROTOCOLS, LEFS_OPTS, NKT_REGIONS, OM_CAT_COLOR, OUTCOME_DB, PC, POSTURE_DEFECTS, PROGRAMME_TEMPLATES, SHOULDER_PROTOCOLS, TSK_OPTS, mid } from './shared.jsx';
 
 function OutcomeMeasuresModule() {
