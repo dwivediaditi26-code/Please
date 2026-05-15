@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
 import { C, getC } from './theme.jsx';
+import { ALL_EXERCISES, ALL_TESTS, ELBOW_PROTOCOLS, EXERCISE_DB, HIP_PROTOCOLS, KNEE_PROTOCOLS, PC, PROGRAMME_TEMPLATES, SHOULDER_PROTOCOLS, mid, px } from './shared.jsx';
 
 function ProtocolPanel({ protocols, openId, setOpenId, openTx, setOpenTx, openPhase, togglePhase }) {
   return (

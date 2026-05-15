@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
 import { C, getC } from './theme.jsx';
+import { KEY_JOINTS, PC, TRACKING_STATES, clamp, mid, px, r1, vis } from './shared.jsx';
 
 function PostureCameraModule({ activePatient, set }) {
   const videoRef   = useRef(null);
