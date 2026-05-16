@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
+import { C, getC } from './theme.jsx';
 import { clamp } from './PostureCamera.jsx';
 function HomeModule({ onNav }) {
   const PC = getC();

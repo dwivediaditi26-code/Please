@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
+import { C, getC } from './theme.jsx';
 import { SUBJECTIVE_SECTIONS } from './CyriaxBodyChart.jsx';
 function SubjectiveModule({ data, set }) {
   const [activeSection, setActiveSection] = useState("demographics");

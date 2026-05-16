@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
+import { C, getC } from './theme.jsx';
 import { CYRIAX_STTT_INTERPRETATION, ENDFEEL_DATA, CAPSULAR_PATTERNS, CYRIAX_REGIONS_DATA, cyriaxAutoReason } from './SpecialTestsSection.jsx';
 function CyriaxModule({ data, set }) {
   const [region, setRegion] = useState("shoulder");

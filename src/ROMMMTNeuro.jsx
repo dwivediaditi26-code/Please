@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
+import { C, getC } from './theme.jsx';
 import { ROM_DATA, ROM_REGIONS, RESTRICTION_GRADE, ROM_REDFLAGS, ALL_TESTS } from './TreatmentModules.jsx';
 function ROMModule({data,set}){
   const [region,setRegion]=useState(ROM_REGIONS[0]);

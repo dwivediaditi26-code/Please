@@ -1,17 +1,15 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
 import { ErrorBoundary, useTheme, C, MobileStyleInjector } from './theme.jsx';
 import { SpecialTestsSection } from './SpecialTestsSection.jsx';
-import { CyriaxModule, SUBJECTIVE_SECTIONS, BodyChartModule } from './CyriaxBodyChart.jsx';
-import { SubjectiveModule, NKT_REGIONS, KC_REGIONS, KineticChainSection, MOVEMENTS } from './SubjectiveKinetic.jsx';
+import { CyriaxModule, BodyChartModule, SUBJECTIVE_SECTIONS } from './CyriaxBodyChart.jsx';
+import { SubjectiveModule, NKT_REGIONS, KC_REGIONS, MOVEMENTS, KineticChainSection } from './SubjectiveKinetic.jsx';
 import { FMASection, FasciaSection, NKTSection, CyriaxRegionTests } from './FMAFasciaNKT.jsx';
-import { generateDiagnosis, ErgoModule, GaitModule } from './OutcomesSOAP.jsx';
-import { OutcomeMeasuresModule, SOAPNoteModule } from './OutcomesSOAP.jsx';
+import { generateDiagnosis, ErgoModule, GaitModule, OutcomeMeasuresModule, SOAPNoteModule } from './OutcomesSOAP.jsx';
 import { ExercisePrescriptionModule, PalpationModule, TreatmentTechniquesModule, TreatmentSessionLogModule, ALL_TESTS } from './TreatmentModules.jsx';
 import { ROMModule, MMTModule, NeurologicalModule, DERMATOMES, REFLEXES, NEURAL_TENSION, RED_FLAGS_NEURO } from './ROMMMTNeuro.jsx';
 import { PostureCameraModule, mid, clamp } from './PostureCamera.jsx';
 import { PostureAnalysisModule } from './PostureAnalysis.jsx';
-import { PatientDatabasePanel, PostureDefectModule } from './PatientDatabase.jsx';
-import { loadPatientDB, savePatientDB, genId, PostureLiveAnalysis, PhotoUploadAnalyzer } from './PostureAnalysis.jsx';
+import { PatientDatabasePanel, PostureDefectModule, loadPatientDB, savePatientDB, genId } from './PatientDatabase.jsx';
 import { HomeModule, TherapistDashboardModule, PdfReportsModal } from './HomeDashboard.jsx';
 
 function AppInner() {

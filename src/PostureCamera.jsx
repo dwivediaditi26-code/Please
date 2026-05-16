@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, Component } from 'react';
-import { getC, useTheme, C, MobileStyleInjector } from './theme.jsx';
+import { C, getC } from './theme.jsx';
 import { KEY_JOINTS, TRACKING_STATES, computeQuality, createSmoother, CalibrationSystem, SkeletonRenderer, BodyAlignmentGuide, TrackingStateBar, CameraView, CameraControls, CameraPositionGuide, PoseTracker } from './ROMMMTNeuro.jsx';
 import { makePDFPage } from './SubjectiveKinetic.jsx';
 function PostureCameraModule({ activePatient, set }) {
@@ -3150,4 +3150,4 @@ const POSTURE_MP_CDN = "https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469
 
 // ─── MAIN POSTURE ANALYSIS MODULE ────────────────────────────────────────────
 
-export { PostureCameraModule, usePostureHistory, AdvancedMeasurementEngine, ReliabilityEngine, ClinicalFindingsEngine, PostureScoreEngine, renderPostureOverlay, loadScript, POSTURE_VIEW_META, POSTURE_MP_CDN, PostureSparkline, PostureScoreRing, MetricRow, FindingCard, mid, vis, clamp, px, r1 };
+export { PostureCameraModule, usePostureHistory, AdvancedMeasurementEngine, ReliabilityEngine, ClinicalFindingsEngine, PostureScoreEngine, renderPostureOverlay, loadScript, POSTURE_VIEW_META, POSTURE_MP_CDN, mid, vis, clamp, px, r1 };
